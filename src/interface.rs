@@ -4,28 +4,36 @@ const MONSTERS: [u8; 40] = [19, 60, 24, 41, 42, 52, 5, 8, 20, 23, 62, 51, 7, 6, 
     15, 14, 12, 45, 32, 54, 25, 43, 59, 47, 56, 3, 2, 1, 16, 53, 18, 55, 58, 61, 9, 44, 40];
 
 fn read_int(address: usize, handle: &ProcessHandle) -> u32 {
-    let bytes = copy_address(address, 4, handle)
-        .expect("Interface not connected from emulator.");
+    let bytes = copy_address(address, 4, handle).unwrap_or_else(|_| {
+        println!("Interface not connected to emulator.");
+        std::process::exit(0);
+    });
     u32::from_le_bytes(bytes.try_into().unwrap())
 }
 
 fn read_short(address: usize, handle: &ProcessHandle) -> u32 {
-    let mut bytes = copy_address(address, 2, handle)
-        .expect("Interface not connected from emulator.");
+    let mut bytes = copy_address(address, 2, handle).unwrap_or_else(|_| {
+        println!("Interface not connected to emulator.");
+        std::process::exit(0);
+    });
     bytes.push(0);
     bytes.push(0);
     u32::from_le_bytes(bytes.try_into().unwrap())
 }
 
 fn read_byte(address: usize, handle: &ProcessHandle) -> u8 {
-    let bytes = copy_address(address, 1, handle)
-        .expect("Interface not connected from emulator.");
+    let bytes = copy_address(address, 1, handle).unwrap_or_else(|_| {
+        println!("Interface not connected to emulator.");
+        std::process::exit(0);
+    });
     bytes[0]
 }
 
 fn read_bool(address: usize, handle: &ProcessHandle) -> bool {
-    let bytes = copy_address(address, 1, handle)
-        .expect("Interface not connected from emulator.");
+    let bytes = copy_address(address, 1, handle).unwrap_or_else(|_| {
+        println!("Interface not connected to emulator.");
+        std::process::exit(0);
+    });
     bytes[0] != 0
 }
 

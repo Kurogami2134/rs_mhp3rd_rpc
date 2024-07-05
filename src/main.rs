@@ -92,14 +92,18 @@ fn get_pid() -> Pid {
     let opts = sys.processes_by_name("PPSSPP");
     let cnt = opts.count();
     if cnt == 0 {
-        panic!("Emulator not found.");
+        println!("Emulator not found.");
+        std::process::exit(0);
     } else {
         if cnt > 1 {
             println!("Multiple emulator processes open, picking first.");
         }
         match sys.processes_by_name("PPSSPP").next() {
             Some(proc) => proc.pid().as_u32(),
-            None => panic!("Emulator not found.")
+            None => {
+                println!("Emulator not found.");
+                std::process::exit(0)
+            }
         }
     }
 }
@@ -119,7 +123,8 @@ fn get_base_address() -> usize {
     unsafe {
         let a = LPARAM(0);
         if let Ok(_) = EnumWindows(Some(enumerate_callback), a) {
-            panic!("Emulator window not found.");
+            println!("Emulator window not found.");
+            std::process::exit(0);
         }
         let base_address = SendMessageA(EMU_HWND, 0xB118, WPARAM(0), LPARAM(0)).0 as usize;
         let base_address = base_address + ((SendMessageA(EMU_HWND, 0xB118, WPARAM(0), LPARAM(1)).0 as usize) << 32);
@@ -135,7 +140,10 @@ fn main() -> () {
 
     let mut client = DiscordIpcClient::new("1110702590997577750").unwrap();
 
-    client.connect().expect("Discord client isn't running.");
+    client.connect().unwrap_or_else(|_| {
+        println!("Discord client isn't running.");
+        std::process::exit(0);
+    });
 
     loop {
         info.update();
